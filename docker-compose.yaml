@@ -3,10 +3,32 @@ services:
     container_name: postgres_container
     image: postgres:14.2
     ports:
-      - 5000:5432
+      - 5433:5432
     environment:
       POSTGRES_DB: db
       POSTGRES_USER: Mpampis
       POSTGRES_PASSWORD: db_password
     volumes:
     - ./postgres/data:/var/lib/postgresql/data
+    networks:
+      - my-network
+
+  af:
+    container_name: airflow_container
+    image: apache/airflow:3.0.0
+    ports:
+      - 8000:8080
+    environment:
+      AIRFLOW_DATABASE_SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@db:5432/airflow_db
+    volumes:
+      - ./airflow/dags:/opt/airflow/dags
+    depends_on:
+      - db
+    networks:
+      - my-network
+    command:
+      bash -c "airflow db migrate && airflow standalone"
+
+networks:
+  my-network:
+    driver: bridge

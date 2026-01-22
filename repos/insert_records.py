@@ -45,13 +45,10 @@ def create_table(conn):
 # create_table(conn)
 
 def insert_record(conn, data):
-    print('Inserting stocks data into the database...')
+    print("Inserting stock data into the database...")
     cursor = conn.cursor()
-    # Extract symbol and time series
-    symbol = data["Meta Data"]["2. Symbol"]
-    time_series = data["Time Series (Daily)"]
-        # Loop over each date in the time series
-    for date, values in time_series.items():
+    
+    for stock in data:
         cursor.execute("""
             INSERT INTO PUBLIC.stock_prices(
                 symbol,
@@ -63,24 +60,17 @@ def insert_record(conn, data):
                 volume
             ) VALUES (%s, %s, %s, %s, %s, %s, %s);
         """,(
-            symbol,
-            date,
-            float(values["1. open"]),
-            float(values["2. high"]),
-            float(values["3. low"]),
-            float(values["4. close"]),
-            int(values["5. volume"])
-        )
-        )
+            stock["ticker"],
+            stock["last_trade_time"][:10],  # YYYY-MM-DD
+            stock.get("day_open"),
+            stock.get("day_high"),
+            stock.get("day_low"),
+            stock.get("price"),
+            stock.get("volume")
+        ))
     conn.commit()
     print("Data successfull inserted")
-        
-    # except psycopg2.Error as e:
-    #     print(f"Error inserting data into database:  {e}")
-    #     raise e 
-    # Connect to database
-    
-   
+          
    
 # Main script
 def main():
@@ -90,18 +80,17 @@ def main():
 
     create_table(conn)
 
-    stocks = ["AAPL", "MSFT", "GOOGL", "IBM"]
-    for stock in stocks:
-        data = fetch_data(stock)
+    stocks = ["AAPL", "MSFT", "GOOGL"]
+    stock_data = fetch_data(stocks)
 
-        # Handle API rate limits
-        if "Note" in data:
-            print(f"Rate limit reached, waiting 60 seconds...")
-            time.sleep(60)
-            data = fetch_data(stock)
+        # # Handle API rate limits
+        # if "Note" in data:
+        #     print(f"Rate limit reached, waiting 60 seconds...")
+        #     time.sleep(60)
+        #     data = fetch_data(stock)
 
-        insert_record(conn, data)
-        time.sleep(15)  # Avoid hitting rate limit
+    insert_record(conn, stock_data)
+    time.sleep(15)  # Avoid hitting rate limit
 
     conn.close()
     print("DB connection closed")
@@ -109,47 +98,3 @@ def main():
 if __name__ == "__main__":
     main()   
    
-    
-# stocks = ["AAPL", "MSFT", "GOOGL", "IBM"]    
-# for stock in stocks:
-#     data = fetch_data(stock)    
-
-# conn = connect_to_db()
-# create_table(conn)
-# insert_record(conn, data)
-
-
-# def main():
-#     try:
-#         conn = connect_to_db()
-#         if not conn:
-#             return  # stop if connection failed
-
-#         create_table(conn)
-
-#         stocks = ["AAPL", "MSFT", "GOOGL", "IBM"]
-#         for stock in stocks:
-#             data = fetch_data(stock)
-
-#             # Check for rate limit or invalid response
-#             if "Note" in data:
-#                 print(f"Rate limit hit. Waiting 60 seconds...")
-#                 time.sleep(60)
-#                 data = fetch_data(stock)  # retry
-
-#             if not isinstance(data, dict) or "Meta Data" not in data or "Time Series (Daily)" not in data:
-#                 print(f"Skipping {stock} due to invalid API response")
-#                 continue
-
-#             insert_record(conn, data)
-#             time.sleep(15)  # wait to avoid hitting API limit
-            
-#     except Exception as e:
-#         print(f"An error occurred during execution: {e}")
-
-#     finally:
-#         if 'conn' in locals() and conn:
-#             conn.close()
-#             print("Database connection closed.")
-
-# main()

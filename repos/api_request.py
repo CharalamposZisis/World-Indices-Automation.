@@ -1,29 +1,35 @@
 import requests
-api_key = '3HWC08RABPOP8UTE'
-api_url = "https://www.alphavantage.co/query"
-stocks = ["AAPL", "MSFT", "GOOGL", "IBM"]
 
-def fetch_data(symbol, function="TIME_SERIES_DAILY"):
-    print(f"Fetching data for {symbol} from Alpha Vantage")
+API_KEY = "f452GbQOp8NwPwaJ2hXcSJfBPy32QbrjkwCiriLB"
+BASE_URL = "https://api.stockdata.org/v1/data/quote"
+
+stocks = ["AAPL", "MSFT", "GOOGL", "TSLA"] # Because of the limitation of the StockData page we can get only 3 stocks data for free.
+
+def fetch_data(symbols):
+    symbols_str = ",".join(symbols)
 
     params = {
-        "function": function,
-        "symbol": symbol,
-        "apikey": api_key
+        "symbols": symbols_str,
+        "api_token": API_KEY
     }
 
     try:
-        response = requests.get(api_url, params=params)
+        response = requests.get(BASE_URL, params=params, timeout=10)
         response.raise_for_status()
         data = response.json()
-        print("API response received successfully")
-        return data
+
+        return data.get("data", [])
 
     except requests.exceptions.RequestException as e:
-        print(f"An error occurred: {e}")
-        raise
+        print(f"Error fetching stock data: {e}")
+        return []
 
-for stock in stocks:
-    data = fetch_data(stock)
-# def mock_fetch_data():
-    
+stock_data = fetch_data(stocks)
+
+# for stock in stock_data:
+#     print(f"Symbol: {stock['ticker']}")
+#     print(f"Price: {stock['price']}")
+#     print(f"Volume: {stock['volume']}")
+#     print(f"Day High: {stock['day_high']}")
+#     print(f"Day Low: {stock['day_low']}")
+#     print("-" * 40)
