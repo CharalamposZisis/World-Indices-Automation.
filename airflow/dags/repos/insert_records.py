@@ -1,4 +1,4 @@
-from api_request import fetch_data
+from repos.api_request import fetch_data
 import psycopg2
 import time
 
@@ -7,8 +7,8 @@ def connect_to_db():
     print("Connecting to the PostgreSQL database...")
     try:
         conn = psycopg2.connect(
-            host = "localhost",
-            port = 5433,
+            host = "db",
+            port = 5432,
             dbname = "db",
             user = "Mpampis",
             password = "db_password"

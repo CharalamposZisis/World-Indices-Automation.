@@ -2,11 +2,13 @@ from airflow import DAG
 from airflow.providers.standard.operators.python import PythonOperator
 from datetime import datetime, timedelta
 import sys
-sys.path.append(r'/home/charis/Desktop/Projects/Airflow Project/repos')  
+sys.path.append('/home/charis/Desktop/Projects/Airflow Project/repos')  
 
 from repos.insert_records import main
 
+# the next one is an example task
 def safe_main_callable():
+    # print('This is an example task')
     return main()
 
 default_args = {
